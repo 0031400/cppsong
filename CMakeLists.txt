@@ -7,9 +7,20 @@ find_package(Boost CONFIG REQUIRED COMPONENTS system json program_options)
 find_package(OpenSSL REQUIRED)
 add_executable(one
     src/main.cpp
+    src/tcp/tcpclient.cpp
     src/udp/udpclient.cpp
+    src/transports/tcptransport.cpp
+    src/connections/tcpconnection.cpp
+    src/connections/wsconnection.cpp
+    src/listeners/listener.cpp
+    src/listeners/tcplistener.cpp
+    src/listeners/tlslistener.cpp
+    src/listeners/wslistener.cpp
+    src/listeners/wsslistener.cpp
     src/utils/bytes.cpp
+    src/utils/log.cpp
     src/dns/message.cpp
+    src/dns/dns.cpp
 )
 
 target_include_directories(one PRIVATE include src)

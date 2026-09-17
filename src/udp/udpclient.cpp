@@ -3,7 +3,7 @@
 #include "utils/headers.hpp"
 #include <array>
 #include <boost/asio/use_awaitable.hpp>
-#include <iostream>
+#include "utils/log.hpp"
 #include <stdexcept>
 UdpClient::UdpClient(asio::io_context &io, std::optional<udp::endpoint> local)
     : io_(io), local_(local), socket_(io_), sessions_(io_) {}
@@ -31,11 +31,8 @@ async<void> UdpClient::receive_work_() {
       UdpSession session{sender, bytes(buffer.begin(), buffer.begin() + n)};
       co_await sessions_.put(session);
     }
-  } catch (const boost::system::system_error &e) {
-    auto ec = e.code();
-    std::cout << ec.message() << std::endl;
   } catch (const std::exception &e) {
-    std::cout << e.what() << std::endl;
+    log_error("udp receive work", e);
   }
 }
 async<void> UdpClient::send(UdpSession session) {

@@ -9,6 +9,7 @@
 #include <vector>
 namespace asio = boost::asio;
 namespace beast = boost::beast;
+namespace websocket = beast::websocket;
 namespace http = beast::http;
 namespace ip = asio::ip;
 namespace ssl = asio::ssl;
