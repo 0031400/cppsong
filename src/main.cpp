@@ -1,24 +1,30 @@
 #include "common/address.hpp"
+#include "connections/relay.hpp"
 #include "connections/tcpconnection.hpp"
+#include "listeners/tcplistener.hpp"
 #include "tcp/tcpclient.hpp"
 #include "utils/headers.hpp"
 #include "utils/log.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/ip/address_v4.hpp>
 #include <format>
+#include <memory>
 
 class App {
 public:
   explicit App(asio::io_context &io) : io_(io) {}
   asio::awaitable<void> run() {
-    // auto socket =
-    //     co_await connect_ip(io_, ip::make_address("220.181.111.1"), 80);
-    auto socket =
-        co_await connect_address(io_, DomainAddress("www.baidu.com", 80));
-    auto conn = TcpConnection(std::move(socket));
-    std::string req("GET / HTTP/1.1\r\nHost: www.baidu.com\r\n\r\n");
-    co_await conn.write({req.begin(), req.end()});
-    auto data = co_await conn.read(4096);
-    log("tcp", std::format("size: {}", data.size()));
-    // log("tcp", std::string(data.begin(), data.end()));
+    auto listener =
+        TcpListener(io_, tcp::endpoint(ip::make_address_v4("127.0.0.1"), 3000));
+    asio::co_spawn(io_, listener.start(), asio::detached);
+    while (true) {
+      auto conn1 = co_await listener.session();
+      auto socket =
+          co_await connect_address(io_, DomainAddress("www.baidu.com", 80));
+      auto conn2 = std::make_shared<TcpConnection>(std::move(socket));
+      asio::co_spawn(io_, relay(io_, conn1, conn2), asio::detached);
+    }
   }
 
 private:

@@ -12,6 +12,7 @@ add_executable(one
     src/transports/tcptransport.cpp
     src/connections/tcpconnection.cpp
     src/connections/wsconnection.cpp
+    src/connections/relay.cpp
     src/listeners/listener.cpp
     src/listeners/tcplistener.cpp
     src/listeners/tlslistener.cpp

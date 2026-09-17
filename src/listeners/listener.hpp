@@ -8,9 +8,9 @@ class Listener {
 public:
   explicit Listener(asio::io_context &io);
   virtual async<void> start() = 0;
-  async<std::unique_ptr<Connection>> session();
+  async<std::shared_ptr<Connection>> session();
   virtual void close() = 0;
 
 protected:
-  AsyncQueue<std::unique_ptr<Connection>> sessions_;
+  AsyncQueue<std::shared_ptr<Connection>> sessions_;
 };

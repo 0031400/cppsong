@@ -3,19 +3,7 @@
 #include "dns/dns.hpp"
 #include "utils/headers.hpp"
 #include "utils/log.hpp"
-#include <boost/asio/bind_cancellation_slot.hpp>
-#include <boost/asio/cancellation_signal.hpp>
-#include <boost/asio/cancellation_type.hpp>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/address.hpp>
-#include <boost/asio/redirect_error.hpp>
-#include <boost/asio/steady_timer.hpp>
-#include <boost/asio/use_awaitable.hpp>
-#include <boost/system/detail/error_code.hpp>
 #include <memory>
-#include <mutex>
 #include <utility>
 namespace {
 async<void>
