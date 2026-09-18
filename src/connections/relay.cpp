@@ -18,7 +18,7 @@ async<void> forward(std::shared_ptr<asio::steady_timer> timer,
       co_await conn2->write(data);
     }
   } catch (const std::exception &e) {
-    log_error("ws handle", e);
+    log_error("tcp forward", e);
   }
   timer->cancel();
 }

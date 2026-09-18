@@ -12,7 +12,7 @@ async<bytes> WsConnection::read(int n) {
     co_return res;
   }
   beast::flat_buffer buffer;
-  n = co_await stream_.async_read(buffer, asio::use_awaitable);
+  co_await stream_.async_read(buffer, asio::use_awaitable);
   if (!stream_.got_binary()) {
     throw std::runtime_error("ws only accept binary");
   }

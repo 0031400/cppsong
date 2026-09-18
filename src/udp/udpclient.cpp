@@ -1,14 +1,15 @@
 #include "udp/udpclient.hpp"
 #include "udp/udpsession.hpp"
 #include "utils/headers.hpp"
+#include "utils/log.hpp"
 #include <array>
 #include <boost/asio/use_awaitable.hpp>
-#include "utils/log.hpp"
 #include <stdexcept>
+
 UdpClient::UdpClient(asio::io_context &io, std::optional<udp::endpoint> local)
     : io_(io), local_(local), socket_(io_), sessions_(io_) {}
 async<void> UdpClient::start(std::optional<udp::endpoint> remote) {
-  if (!local_.has_value() and !remote.has_value()) {
+  if (!local_.has_value() && !remote.has_value()) {
     throw std::runtime_error("udp local or remote addr should be set one");
   }
   if (local_.has_value()) {

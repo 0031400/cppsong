@@ -139,3 +139,28 @@ std::vector<ip::address> parse_dns_response(const bytes &packet) {
   }
   return result;
 }
+std::string parse_dns_query(const bytes &data) {
+  if (data.size() < 12) {
+    throw std::runtime_error("invalid dns packet");
+  }
+  std::size_t pos = 12;
+  std::string domain;
+  while (true) {
+    if (pos >= data.size()) {
+      throw std::runtime_error("invalid dns name");
+    }
+    auto len = data[pos++];
+    if (len == 0) {
+      break;
+    }
+    if (pos + len > data.size()) {
+      throw std::runtime_error("invalid dns label");
+    }
+    if (!domain.empty()) {
+      domain += '.';
+    }
+    domain.append(reinterpret_cast<const char *>(&data[pos]), len);
+    pos += len;
+  }
+  return domain;
+}
