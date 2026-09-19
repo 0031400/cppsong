@@ -54,6 +54,7 @@ OutboundConfig parseOutboundConfig(const json::object &obj) {
   v.server_port = getu16(obj, "server_port");
   v.tls = parseTlsClientConfig(getObj(obj, "tls"));
   v.user = parseUserPassConfig(getObj(obj, "user"));
+  v.transport = parseTransportConfig(getObj(obj, "transport"));
   v.uuid = getString(obj, "uuid");
   return v;
 }

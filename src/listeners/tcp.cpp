@@ -1,4 +1,4 @@
-#include "listeners/tcplistener.hpp"
+#include "listeners/tcp.hpp"
 #include "connections/tcp.hpp"
 #include "utils/log.hpp"
 #include "listener.hpp"
@@ -18,7 +18,7 @@ async<void> TcpListener::mainWork_() {
           std::make_unique<TcpConnection>(std::move(socket)));
     }
   } catch (const std::exception &e) {
-    log_error("dns center start", e);
+    log_error("tcp listen main work", e);
   }
 }
 void TcpListener::close() {

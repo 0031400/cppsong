@@ -2,10 +2,13 @@
 #include "config/config.hpp"
 #include "dns/dns.hpp"
 #include "inbounds/inbound.hpp"
-#include "outbounds/outbound.hpp"
 #include "listeners/listener.hpp"
+#include "outbounds/outbound.hpp"
+#include "transports/transport.hpp"
 #include <boost/asio/io_context.hpp>
 #include <memory>
+#include <string>
+
 class Builder {
 public:
   explicit Builder(asio::io_context &io, AppConfig config);
@@ -14,6 +17,9 @@ public:
   std::unique_ptr<Inbound> buildInbound(InboundConfig config);
   std::shared_ptr<Outbound> buildOutbound(OutboundConfig config);
   std::unique_ptr<Listener> buildListener(InboundConfig config);
+  std::unique_ptr<Transport> buildTransport(OutboundConfig config);
+  bytes buildUuid(std::string uuid);
+  Address buildAddress(std::string server, u16 port);
   Rule buildRule(DomainRuleConfig config);
 
 private:

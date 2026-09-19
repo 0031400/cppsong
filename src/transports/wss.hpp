@@ -8,12 +8,16 @@
 
 class WssTransport : public Transport {
 public:
-  explicit WssTransport(asio::io_context &io, std::string host_,
-                        std::string path_);
+  explicit WssTransport(asio::io_context &io, std::string host,
+                        std::string path, std::string serverName,
+                        bool insecure);
   async<std::unique_ptr<Connection>> connect(Address address);
 
 private:
   asio::io_context &io_;
   std::string host_;
   std::string path_;
+  std::string serverName_;
+  bool insecure_;
+  ssl::context ctx_;
 };

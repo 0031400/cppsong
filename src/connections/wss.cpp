@@ -32,6 +32,7 @@ async<bytes> WssConnection::read_exactly(int n) {
   co_return res;
 }
 async<void> WssConnection::write(bytes data) {
+  stream_.binary(true);
   co_await stream_.async_write(asio::buffer(data), asio::use_awaitable);
 }
 async<void> WssConnection::close() {

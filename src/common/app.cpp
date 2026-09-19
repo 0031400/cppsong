@@ -3,6 +3,7 @@
 #include "config/config.hpp"
 #include "connections/relay.hpp"
 #include "utils/headers.hpp"
+#include "utils/log.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
@@ -11,6 +12,7 @@
 #include <memory>
 #include <sstream>
 #include <utility>
+
 namespace {
 std::string readFile(std::string filePath) {
   std::ifstream file(filePath);
@@ -37,14 +39,23 @@ void App::run() {
   io_.run();
 }
 async<void> App::inboundWork_(std::unique_ptr<Inbound> inbound) {
-  while (true) {
-    auto session = co_await inbound->session();
-    asio::co_spawn(io_, handleSession_(std::move(session)), asio::detached);
+  try {
+    while (true) {
+      auto session = co_await inbound->session();
+      asio::co_spawn(io_, handleSession_(std::move(session)), asio::detached);
+    }
+  } catch (const std::exception &e) {
+    log_error("app inbound work", e);
   }
 }
 async<void> App::handleSession_(InTcpSession session) {
-  auto outbound = outbounds["direct"];
-  auto conn1 = std::move(session.conn);
-  auto conn2 = co_await outbound->connect({session.address, session.firstData});
-  co_await relay(io_, std::move(conn1), std::move(conn2));
+  try {
+    auto outbound = outbounds["direct"];
+    auto conn1 = std::move(session.conn);
+    auto conn2 =
+        co_await outbound->connect({session.address, session.firstData});
+    co_await relay(io_, std::move(conn1), std::move(conn2));
+  } catch (const std::exception &e) {
+    log_error("app handle session", e);
+  }
 }

@@ -70,6 +70,7 @@ struct OutboundConfig {
   UserPassConfig user;
   std::string uuid;
   TlsClientConfig tls;
+  TransportConfig transport;
 };
 struct RouteRuleConfig {
   DomainRuleConfig rule;

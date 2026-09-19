@@ -19,14 +19,16 @@ add_executable(one
     src/inbounds/inbound.cpp
     src/inbounds/mixed.cpp
     src/listeners/listener.cpp
-    src/listeners/tcplistener.cpp
-    src/listeners/tlslistener.cpp
-    src/listeners/wslistener.cpp
-    src/listeners/wsslistener.cpp
+    src/listeners/tcp.cpp
+    src/listeners/tls.cpp
+    src/listeners/ws.cpp
+    src/listeners/wss.cpp
     src/outbounds/direct.cpp
+    src/outbounds/vless.cpp
     src/router/rule.cpp
     src/tcp/tcpclient.cpp
     src/transports/tcp.cpp
+    src/transports/wss.cpp
     src/udp/udpclient.cpp
     src/utils/bytes.cpp
     src/utils/json.cpp
@@ -43,6 +45,6 @@ if(WIN32)
         _WIN32_WINNT=0x0A00
     )
 endif()
-# if(MSVC)
-#     target_compile_options(one PRIVATE /bigobj)
-# endif()
+if(MSVC)
+    target_compile_options(one PRIVATE /bigobj)
+endif()

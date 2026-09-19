@@ -1,4 +1,4 @@
-#include "listeners/wslistener.hpp"
+#include "listeners/ws.hpp"
 #include "connections/ws.hpp"
 #include "listener.hpp"
 #include "utils/log.hpp"
@@ -19,7 +19,7 @@ async<void> WsListener::mainWork_() {
       asio::co_spawn(io_, handle_(std::move(socket)), asio::detached);
     }
   } catch (const std::exception &e) {
-    log_error("dns center start", e);
+    log_error("ws listen main work", e);
   }
 }
 async<void> WsListener::handle_(tcp::socket socket) {

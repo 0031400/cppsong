@@ -75,6 +75,6 @@ async<void> DnsCenter::mainWork_() {
       asio::co_spawn(io_, handleClient_(session), asio::detached);
     }
   } catch (const std::exception &e) {
-    log_error("dns center start", e);
+    log_error("dns center main work", e);
   }
 }
