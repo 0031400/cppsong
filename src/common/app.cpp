@@ -26,8 +26,9 @@ void App::run() {
   auto appConfig =
       paresAppConfig(json::parse(readFile(configPath_)).as_object());
   auto builder = Builder(io_, appConfig);
-  auto dnsCenter = builder.buildDnsCenter();
-  dnsCenter.start();
+  auto dnsCenter = std::make_shared<DnsCenter>(builder.buildDnsCenter());
+  dnsCenter->start();
+  DnsCenter::instance = dnsCenter;
   for (auto item : appConfig.outbounds) {
     outbounds[item.tag] = builder.buildOutbound(item);
   }

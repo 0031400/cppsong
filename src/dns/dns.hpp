@@ -11,16 +11,18 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-async<std::vector<ip::address>> resolve(std::string_view domain);
 class DnsCenter {
 public:
   explicit DnsCenter(
-      asio::io_context &io, std::optional<udp::endpoint> endpoint, std::vector<DnsRule> rules,
+      asio::io_context &io, std::optional<udp::endpoint> endpoint,
+      std::vector<DnsRule> rules,
       std::unordered_map<std::string, std::unique_ptr<DnsServer>> servers,
       std::string final);
   void start();
   void stop();
   async<bytes> relay(bytes data);
+  inline static std::shared_ptr<DnsCenter> instance = nullptr;
+  static async<std::vector<ip::address>> resolve(std::string domain);
 
 private:
   std::string match_(std::string_view domain);

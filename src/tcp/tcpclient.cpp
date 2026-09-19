@@ -39,7 +39,7 @@ async<tcp::socket> connect_address(asio::io_context &io, Address address) {
     co_return co_await connect_ip(io, value, address.port);
   }
   auto value = std::get<std::string>(address.address);
-  std::vector<ip::address> ips = co_await resolve(value);
+  std::vector<ip::address> ips = co_await DnsCenter::resolve(value);
   u16 port = address.port;
   auto result = std::make_shared<std::optional<tcp::socket>>();
   auto timer = std::make_shared<asio::steady_timer>(io);

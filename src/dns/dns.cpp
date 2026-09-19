@@ -4,15 +4,27 @@
 #include "utils/log.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/asio/this_coro.hpp>
+#include <boost/asio/use_awaitable.hpp>
 #include <format>
 #include <stdexcept>
 #include <utility>
 
-async<std::vector<ip::address>> resolve(std::string_view domain) {
-  co_return std::vector<ip::address>{
-      ip::make_address("220.181.111.232"), ip::make_address("220.181.111.1"),
-      ip::make_address("240e:83:205:381:0:ff:b00f:96a2"),
-      ip::make_address("240e:83:205:1cd:0:ff:b0b8:dee9")};
+async<std::vector<ip::address>> DnsCenter::resolve(std::string domain) {
+  if (instance) {
+    auto data = build_dns_query(domain, false);
+    data = co_await instance->relay(data);
+    co_return parse_dns_response(data);
+  }
+  auto executor = co_await asio::this_coro::executor;
+  tcp::resolver resolver(executor);
+  auto results =
+      co_await resolver.async_resolve(domain, "", asio::use_awaitable);
+  std::vector<ip::address> ips;
+  for (const auto &item : results) {
+    ips.emplace_back(item.endpoint().address());
+  }
+  co_return ips;
 }
 DnsCenter::DnsCenter(
     asio::io_context &io, std::optional<udp::endpoint> endpoint,
