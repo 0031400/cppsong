@@ -18,6 +18,7 @@ add_executable(one
     src/dns/servers/udp.cpp
     src/dns/servers/https.cpp
     src/dns/dns.cpp
+    src/dns/cache.cpp
     src/dns/message.cpp
     src/inbounds/inbound.cpp
     src/inbounds/mixed.cpp

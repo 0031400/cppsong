@@ -1,4 +1,5 @@
 #pragma once
+#include "cache.hpp"
 #include "rule.hpp"
 #include "servers/server.hpp"
 #include "udp/udpclient.hpp"
@@ -34,4 +35,5 @@ private:
   std::unordered_map<std::string, std::unique_ptr<DnsServer>> servers_;
   std::string final_;
   std::optional<UdpClient> client_;
+  DnsCache cache_;
 };

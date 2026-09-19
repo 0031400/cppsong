@@ -1,4 +1,5 @@
 #include "dns/dns.hpp"
+#include "cache.hpp"
 #include "dns/message.hpp"
 #include "udp/udpclient.hpp"
 #include "utils/log.hpp"
@@ -12,9 +13,15 @@
 
 async<std::vector<ip::address>> DnsCenter::resolve(std::string domain) {
   if (instance) {
+    auto ips = instance->cache_.lookup(domain);
+    if (!ips.empty()) {
+      co_return ips;
+    }
     auto data = build_dns_query(domain, false);
     data = co_await instance->relay(data);
-    co_return parse_dns_response(data);
+    ips = parse_dns_response(data);
+    instance->cache_.store(domain, ips);
+    co_return ips;
   }
   auto executor = co_await asio::this_coro::executor;
   tcp::resolver resolver(executor);
@@ -32,7 +39,7 @@ DnsCenter::DnsCenter(
     std::unordered_map<std::string, std::unique_ptr<DnsServer>> servers,
     std::string final)
     : io_(io), endpoint_(endpoint), rules_(rules), servers_(std::move(servers)),
-      final_(final) {}
+      final_(final), cache_(io_) {}
 async<bytes> DnsCenter::relay(bytes data) {
   auto domain = parse_dns_query(data);
   log("dns", std::format("<- {}", domain));
@@ -61,7 +68,10 @@ std::string DnsCenter::match_(std::string_view domain) {
   }
   return final_;
 }
-void DnsCenter::start() { asio::co_spawn(io_, mainWork_(), asio::detached); }
+void DnsCenter::start() {
+  asio::co_spawn(io_, mainWork_(), asio::detached);
+  cache_.start();
+}
 async<void> DnsCenter::handleClient_(UdpSession session) {
   try {
     session.data = co_await relay(session.data);
