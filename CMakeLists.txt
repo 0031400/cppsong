@@ -11,6 +11,7 @@ add_executable(one
     src/common/builder.cpp
     src/config/config.cpp
     src/connections/tcp.cpp
+    src/connections/tls.cpp
     src/connections/ws.cpp
     src/connections/wss.cpp
     src/connections/relay.cpp
@@ -31,6 +32,7 @@ add_executable(one
     src/router/rule.cpp
     src/tcp/tcpclient.cpp
     src/transports/tcp.cpp
+    src/transports/tls.cpp
     src/transports/wss.cpp
     src/udp/udpclient.cpp
     src/utils/bytes.cpp

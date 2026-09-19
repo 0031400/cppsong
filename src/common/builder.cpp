@@ -9,6 +9,7 @@
 #include "router/ipnet.hpp"
 #include "router/rule.hpp"
 #include "transports/tcp.hpp"
+#include "transports/tls.hpp"
 #include "transports/wss.hpp"
 #include "utils/file.hpp"
 #include "utils/json.hpp"
@@ -120,6 +121,10 @@ Address Builder::buildAddress(std::string server, u16 port) {
 }
 std::unique_ptr<Transport> Builder::buildTransport(OutboundConfig config) {
   if (config.transport.type.empty() || config.transport.type == "tcp") {
+    if (config.tls.enabled) {
+      return std::make_unique<TlsTransport>(io_, config.tls.serverName,
+                                            config.tls.insecure);
+    }
     return std::make_unique<TcpTransport>(io_);
   } else if (config.transport.type == "ws" && config.tls.enabled) {
     return std::make_unique<WssTransport>(
