@@ -18,7 +18,7 @@ private:
   async<void> mainWork_();
   async<void> handle_(std::unique_ptr<Connection> session);
   async<void> handleSocks5_(std::unique_ptr<Connection> session);
-  async<void> handleHttp_(std::unique_ptr<Connection> session);
+  async<void> handleHttp_(std::unique_ptr<Connection> session,u8 firstByte);
   asio::io_context &io_;
   std::unique_ptr<Listener> listener_;
   std::vector<UserPass> users_;

@@ -10,8 +10,15 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/address_v4.hpp>
+#include <boost/system/detail/error_code.hpp>
+#include <boost/url.hpp>
+#include <boost/url/parse.hpp>
+#include <format>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <utility>
+
 MixedInbound::MixedInbound(asio::io_context &io,
                            std::unique_ptr<Listener> listener,
                            std::vector<UserPass> users,
@@ -35,7 +42,7 @@ async<void> MixedInbound::handle_(std::unique_ptr<Connection> conn) {
     co_await handleSocks5_(std::move(conn));
     co_return;
   }
-  co_await handleHttp_(std::move(conn));
+  co_await handleHttp_(std::move(conn), data[0]);
 }
 
 async<void> MixedInbound::handleSocks5_(std::unique_ptr<Connection> conn) {
@@ -103,7 +110,73 @@ async<void> MixedInbound::handleSocks5_(std::unique_ptr<Connection> conn) {
   co_await sessions_.put({std::move(conn), address, data});
   co_return;
 }
-async<void> MixedInbound::handleHttp_(std::unique_ptr<Connection> session) {
+async<void> MixedInbound::handleHttp_(std::unique_ptr<Connection> conn,
+                                      u8 firstByte) {
+  std::string buffer{static_cast<char>(firstByte)};
+  std::string firstLine;
+  std::string method;
+  std::string target;
+  std::string version;
+  while (true) {
+    auto data = co_await conn->read(4096);
+    buffer.insert(buffer.end(), data.begin(), data.end());
+    auto pos = buffer.find("\r\n");
+    if (pos != std::string::npos) {
+      firstLine = buffer.substr(0, pos);
+      buffer.erase(0, pos + 2);
+      std::istringstream iss(firstLine);
+      iss >> method >> target >> version;
+      break;
+    }
+  }
+  auto result = boost::urls::parse_uri_reference(target);
+  if (!result) {
+    throw std::runtime_error("invalid url");
+  }
+  auto url = result.value();
+  auto host = url.host();
+  Address address;
+  address.port = url.port_number();
+  boost::system::error_code ec;
+  auto ipAddress = ip::make_address(host, ec);
+  if (ec) {
+    address.address = host;
+  } else {
+    address.address = ipAddress;
+  }
+  if (method == "CONNECT") {
+    if (!address.port) {
+      address.port = 443;
+    }
+    while (true) {
+      // read all body
+      auto pos = buffer.find("\r\n\r\n");
+      if (pos != std::string::npos) {
+        buffer.erase(0, pos + 4);
+        break;
+      }
+      auto data = co_await conn->read(4096);
+      buffer.insert(buffer.end(), data.begin(), data.end());
+    }
+    std::string response = "HTTP/1.1 200 Connection Established\r\n\r\n";
+    co_await conn->write({response.begin(), response.end()});
+    auto data = co_await conn->read(4096);
+    co_await sessions_.put({std::move(conn), address, data});
+    co_return;
+  }
+  // only rewrite first line
+  if (!address.port) {
+    address.port = 80;
+  }
+  firstLine = std::format("{} {} {}\r\n", method, url.path(), version);
+  auto firstData = bytes(firstLine.begin(), firstLine.end());
+  if (buffer.empty()) {
+    auto data = co_await conn->read(4096);
+    firstData.append_range(data);
+  } else {
+    firstData.append_range(buffer);
+  }
+  co_await sessions_.put({std::move(conn), address, firstData});
   co_return;
 }
 void MixedInbound::close() { listener_->close(); }

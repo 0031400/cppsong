@@ -3,7 +3,7 @@ project(one LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-find_package(Boost CONFIG REQUIRED COMPONENTS system json program_options)
+find_package(Boost CONFIG REQUIRED COMPONENTS system json program_options url)
 find_package(OpenSSL REQUIRED)
 add_executable(one
     src/common/app.cpp
@@ -37,7 +37,7 @@ add_executable(one
 target_include_directories(one PRIVATE include src)
 target_compile_definitions(one PRIVATE BOOST_ASIO_NO_DEPRECATED)
 target_link_libraries(
-    one PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto Boost::json)
+    one PRIVATE Boost::system OpenSSL::SSL OpenSSL::Crypto Boost::json Boost::url)
 if(WIN32)
     target_compile_definitions(one PRIVATE
         _WIN32_WINNT=0x0A00
