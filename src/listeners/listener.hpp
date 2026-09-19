@@ -7,10 +7,11 @@
 class Listener {
 public:
   explicit Listener(asio::io_context &io);
-  virtual async<void> start() = 0;
-  async<std::shared_ptr<Connection>> session();
+  virtual void start() = 0;
+  async<std::unique_ptr<Connection>> session();
   virtual void close() = 0;
+  virtual ~Listener() = default;
 
 protected:
-  AsyncQueue<std::shared_ptr<Connection>> sessions_;
+  AsyncQueue<std::unique_ptr<Connection>> sessions_;
 };

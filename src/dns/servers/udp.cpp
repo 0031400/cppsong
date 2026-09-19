@@ -5,7 +5,7 @@ UdpDnsServer::UdpDnsServer(asio::io_context &io, udp::endpoint endpoint)
     : io_(io), endpoint_(endpoint) {}
 async<bytes> UdpDnsServer::relay(bytes data) {
   UdpClient client(io_);
-  co_await client.start(endpoint_);
+  client.start(endpoint_);
   co_await client.send(UdpSession{endpoint_, data});
   auto session = co_await client.session();
   client.close();

@@ -7,7 +7,7 @@ class UdpClient {
 public:
   explicit UdpClient(asio::io_context &io,
                      std::optional<udp::endpoint> local = std::nullopt);
-  async<void> start(std::optional<udp::endpoint> remote = std::nullopt);
+  void start(std::optional<udp::endpoint> remote = std::nullopt);
   async<UdpSession> session();
   async<void> send(UdpSession session);
   void close();

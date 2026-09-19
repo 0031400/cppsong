@@ -3,7 +3,9 @@
 #include "dns/dns.hpp"
 #include "utils/headers.hpp"
 #include "utils/log.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <memory>
+#include <string>
 #include <utility>
 namespace {
 async<void>
@@ -32,16 +34,13 @@ async<tcp::socket> connect_ip(asio::io_context &io, ip::address ipAddress,
   co_return socket;
 }
 async<tcp::socket> connect_address(asio::io_context &io, Address address) {
-  if (std::holds_alternative<Ipv4Address>(address)) {
-    auto value = std::get<Ipv4Address>(address);
-    co_return co_await connect_ip(io, value.address, value.port);
-  } else if (std::holds_alternative<Ipv6Address>(address)) {
-    auto value = std::get<Ipv6Address>(address);
-    co_return co_await connect_ip(io, value.address, value.port);
+  if (std::holds_alternative<ip::address>(address.address)) {
+    auto value = std::get<ip::address>(address.address);
+    co_return co_await connect_ip(io, value, address.port);
   }
-  auto value = std::get<DomainAddress>(address);
-  std::vector<ip::address> ips = co_await resolve(value.address);
-  u16 port = value.port;
+  auto value = std::get<std::string>(address.address);
+  std::vector<ip::address> ips = co_await resolve(value);
+  u16 port = address.port;
   auto result = std::make_shared<std::optional<tcp::socket>>();
   auto timer = std::make_shared<asio::steady_timer>(io);
   timer->expires_at(asio::steady_timer::time_point::max());

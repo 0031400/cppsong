@@ -9,7 +9,7 @@
 class TcpTransport : public Transport {
 public:
   explicit TcpTransport(asio::io_context &io);
-  async<std::shared_ptr<Connection>> connect(Address address);
+async<std::unique_ptr<Connection>>connect(Address address);
 
 private:
   asio::io_context &io_;

@@ -9,20 +9,24 @@ add_executable(one
     src/common/app.cpp
     src/common/builder.cpp
     src/config/config.cpp
-    src/connections/tcpconnection.cpp
-    src/connections/wsconnection.cpp
+    src/connections/tcp.cpp
+    src/connections/ws.cpp
+    src/connections/wss.cpp
     src/connections/relay.cpp
     src/dns/servers/udp.cpp
     src/dns/dns.cpp
     src/dns/message.cpp
+    src/inbounds/inbound.cpp
+    src/inbounds/mixed.cpp
     src/listeners/listener.cpp
     src/listeners/tcplistener.cpp
     src/listeners/tlslistener.cpp
     src/listeners/wslistener.cpp
     src/listeners/wsslistener.cpp
+    src/outbounds/direct.cpp
     src/router/rule.cpp
     src/tcp/tcpclient.cpp
-    src/transports/tcptransport.cpp
+    src/transports/tcp.cpp
     src/udp/udpclient.cpp
     src/utils/bytes.cpp
     src/utils/json.cpp

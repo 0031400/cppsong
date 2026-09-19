@@ -49,21 +49,7 @@ std::string DnsCenter::match_(std::string_view domain) {
   }
   return final_;
 }
-async<void> DnsCenter::start() {
-  try {
-    if (!endpoint_.has_value()) {
-      co_return;
-    }
-    client_.emplace(io_, endpoint_);
-    co_await client_->start();
-    while (true) {
-      auto session = co_await client_->session();
-      asio::co_spawn(io_, handleClient_(session), asio::detached);
-    }
-  } catch (const std::exception &e) {
-    log_error("dns center start", e);
-  }
-}
+void DnsCenter::start() { asio::co_spawn(io_, mainWork_(), asio::detached); }
 async<void> DnsCenter::handleClient_(UdpSession session) {
   try {
     session.data = co_await relay(session.data);
@@ -75,5 +61,20 @@ async<void> DnsCenter::handleClient_(UdpSession session) {
 void DnsCenter::stop() {
   if (client_.has_value()) {
     client_->close();
+  }
+}
+async<void> DnsCenter::mainWork_() {
+  try {
+    if (!endpoint_.has_value()) {
+      co_return;
+    }
+    client_.emplace(io_, endpoint_);
+    client_->start();
+    while (true) {
+      auto session = co_await client_->session();
+      asio::co_spawn(io_, handleClient_(session), asio::detached);
+    }
+  } catch (const std::exception &e) {
+    log_error("dns center start", e);
   }
 }

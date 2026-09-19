@@ -6,5 +6,5 @@
 
 class Transport {
 public:
-  virtual async<std::shared_ptr<Connection>> connect(Address address) = 0;
+  virtual async<std::unique_ptr<Connection>> connect(Address address) = 0;
 };

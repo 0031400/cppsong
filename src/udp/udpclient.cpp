@@ -8,7 +8,7 @@
 
 UdpClient::UdpClient(asio::io_context &io, std::optional<udp::endpoint> local)
     : io_(io), local_(local), socket_(io_), sessions_(io_) {}
-async<void> UdpClient::start(std::optional<udp::endpoint> remote) {
+void UdpClient::start(std::optional<udp::endpoint> remote) {
   if (!local_.has_value() && !remote.has_value()) {
     throw std::runtime_error("udp local or remote addr should be set one");
   }
@@ -20,7 +20,6 @@ async<void> UdpClient::start(std::optional<udp::endpoint> remote) {
     socket_.connect(remote.value());
   }
   asio::co_spawn(io_, receive_work_(), asio::detached);
-  co_return;
 }
 async<void> UdpClient::receive_work_() {
   try {

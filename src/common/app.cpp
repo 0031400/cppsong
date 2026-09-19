@@ -1,12 +1,16 @@
 #include "common/app.hpp"
 #include "builder.hpp"
 #include "config/config.hpp"
+#include "connections/relay.hpp"
+#include "utils/headers.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/json/parse.hpp>
 #include <fstream>
+#include <memory>
 #include <sstream>
+#include <utility>
 namespace {
 std::string readFile(std::string filePath) {
   std::ifstream file(filePath);
@@ -21,6 +25,26 @@ void App::run() {
       paresAppConfig(json::parse(readFile(configPath_)).as_object());
   auto builder = Builder(io_, appConfig);
   auto dnsCenter = builder.buildDnsCenter();
-  asio::co_spawn(io_, dnsCenter.start(), asio::detached);
+  dnsCenter.start();
+  for (auto item : appConfig.outbounds) {
+    outbounds[item.tag] = builder.buildOutbound(item);
+  }
+  for (auto item : appConfig.inbounds) {
+    auto inbound = builder.buildInbound(item);
+    inbound->start();
+    asio::co_spawn(io_, inboundWork_(std::move(inbound)), asio::detached);
+  }
   io_.run();
+}
+async<void> App::inboundWork_(std::unique_ptr<Inbound> inbound) {
+  while (true) {
+    auto session = co_await inbound->session();
+    asio::co_spawn(io_, handleSession_(std::move(session)), asio::detached);
+  }
+}
+async<void> App::handleSession_(InTcpSession session) {
+  auto outbound = outbounds["direct"];
+  auto conn1 = std::move(session.conn);
+  auto conn2 = co_await outbound->connect({session.address, session.firstData});
+  co_await relay(io_, std::move(conn1), std::move(conn2));
 }

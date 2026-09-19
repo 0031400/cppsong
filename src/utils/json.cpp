@@ -20,7 +20,7 @@ u16 getu16(const json::object &obj, std::string_view key, u16 def) {
     return def;
   }
   auto value = it->value().as_int64();
-  if (value > 0xff) {
+  if (value > 0xffff) {
     throw std::runtime_error("parse json u16 fail");
   }
   return static_cast<u16>(value);

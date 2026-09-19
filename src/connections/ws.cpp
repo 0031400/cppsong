@@ -1,4 +1,4 @@
-#include "connections/wsconnection.hpp"
+#include "connections/ws.hpp"
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/websocket/rfc6455.hpp>
