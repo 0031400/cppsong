@@ -34,6 +34,7 @@ add_executable(one
     src/transports/wss.cpp
     src/udp/udpclient.cpp
     src/utils/bytes.cpp
+    src/utils/file.cpp
     src/utils/json.cpp
     src/utils/log.cpp
     src/main.cpp

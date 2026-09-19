@@ -9,6 +9,8 @@
 #include <boost/asio/io_context.hpp>
 #include <memory>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 class Builder {
 public:
@@ -24,8 +26,11 @@ public:
   Router buildRouter();
   Address buildAddress(std::string server, u16 port);
   DomainRule buildDomainRule(DomainRuleConfig config);
-
-private:
+  Rule buildRule(RuleConfig config);
+  
+  private:
+  void loadRuleSets();
   asio::io_context &io_;
   AppConfig config_;
+  std::unordered_map<std::string, std::vector<Rule>> ruleSets_;
 };

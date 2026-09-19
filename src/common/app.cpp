@@ -2,6 +2,7 @@
 #include "builder.hpp"
 #include "config/config.hpp"
 #include "connections/relay.hpp"
+#include "utils/file.hpp"
 #include "utils/headers.hpp"
 #include "utils/log.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -9,19 +10,9 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/json/parse.hpp>
 #include <format>
-#include <fstream>
 #include <memory>
-#include <sstream>
 #include <utility>
 
-namespace {
-std::string readFile(std::string filePath) {
-  std::ifstream file(filePath);
-  std::stringstream ss;
-  ss << file.rdbuf();
-  return ss.str();
-}
-} // namespace
 App::App(std::string_view configPath) : configPath_(configPath) {}
 void App::run() {
   auto appConfig =

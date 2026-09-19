@@ -98,4 +98,5 @@ struct AppConfig {
   RouterConfig router;
   DnsConfig dns;
 };
+RuleConfig parseRuleConfig(const json::object &obj);
 AppConfig paresAppConfig(const json::object &obj);

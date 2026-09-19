@@ -20,9 +20,12 @@ private:
   std::vector<std::regex> domainRegex_;
 };
 
-struct RouteRule {
+struct Rule {
   DomainRule domainRule;
   std::vector<IpNetwork> cidr;
-  std::string outbound;
   bool match(Address address) const;
+};
+struct RouteRule {
+  std::vector<Rule> rules;
+  std::string outbound;
 };

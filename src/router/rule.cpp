@@ -36,7 +36,7 @@ DomainRule::DomainRule(std::vector<std::string> domain,
                        std::vector<std::regex> domainRegex)
     : domain_(domain), domainSuffix_(domainSuffix),
       domainKeyword_(domainKeyword), domainRegex_(domainRegex) {}
-bool RouteRule::match(Address address) const {
+bool Rule::match(Address address) const {
   if (std::holds_alternative<std::string>(address.address)) {
     auto value = std::get<std::string>(address.address);
     if (domainRule.matchDomain(value)) {

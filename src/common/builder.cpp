@@ -10,7 +10,10 @@
 #include "router/rule.hpp"
 #include "transports/tcp.hpp"
 #include "transports/wss.hpp"
+#include "utils/file.hpp"
+#include "utils/json.hpp"
 #include <boost/asio/ip/address.hpp>
+#include <boost/json/parse.hpp>
 #include <boost/system/detail/error_code.hpp>
 #include <memory>
 #include <stdexcept>
@@ -20,7 +23,9 @@
 #include <vector>
 
 Builder::Builder(asio::io_context &io, AppConfig config)
-    : io_(io), config_(config) {}
+    : io_(io), config_(config) {
+  loadRuleSets();
+}
 DnsCenter Builder::buildDnsCenter() {
   auto config = config_.dns;
   std::optional<udp::endpoint> addr;
@@ -33,6 +38,15 @@ DnsCenter Builder::buildDnsCenter() {
   }
   std::vector<DnsRule> rules;
   for (auto item : config.rules) {
+    for (const auto &ruleSet : item.rule_set) {
+      auto it = ruleSets_.find(ruleSet);
+      if (it == ruleSets_.end()) {
+        throw std::runtime_error("fail to find rule set");
+      }
+      for (const auto &v : it->second) {
+        rules.emplace_back(v.domainRule, item.server);
+      }
+    }
     rules.emplace_back(buildDomainRule(item.rule), item.server);
   }
   return DnsCenter(io_, addr, rules, std::move(servers), config.final);
@@ -116,11 +130,22 @@ std::unique_ptr<Transport> Builder::buildTransport(OutboundConfig config) {
 }
 
 RouteRule Builder::buildRouteRule(RouteRuleConfig config) {
+  std::vector<Rule> rules{buildRule(config.rule)};
+  for (const auto &ruleSet : config.rule_set) {
+    auto it = ruleSets_.find(ruleSet);
+    if (it == ruleSets_.end()) {
+      throw std::runtime_error("fail to find rule set");
+    }
+    rules.append_range(it->second);
+  }
+  return {rules, config.outbound};
+}
+Rule Builder::buildRule(RuleConfig config) {
   std::vector<IpNetwork> networks;
-  for (const auto &item : config.rule.cidr) {
+  for (const auto &item : config.cidr) {
     networks.emplace_back(parseCidr(item));
   }
-  return {buildDomainRule(config.rule.domainRule), networks, config.outbound};
+  return {buildDomainRule(config.domainRule), networks};
 }
 Router Builder::buildRouter() {
   std::vector<RouteRule> rules;
@@ -128,4 +153,26 @@ Router Builder::buildRouter() {
     rules.emplace_back(buildRouteRule(item));
   }
   return Router(rules, config_.router.final);
+}
+void Builder::loadRuleSets() {
+  std::string content;
+  for (const auto &item : config_.router.ruleSets) {
+    std::vector<Rule> rules;
+    if (item.type == "local") {
+      content = readFile(item.path);
+    } else {
+      throw std::runtime_error("unsupport rule set type");
+    }
+    if (item.format == "source") {
+      auto obj = json::parse(content).as_object();
+      auto rulesArray = getArray(obj, "rules");
+      for (const auto &i : rulesArray) {
+        auto ruleConfig = parseRuleConfig(i.as_object());
+        rules.emplace_back(buildRule(ruleConfig));
+      }
+    } else {
+      throw std::runtime_error("unsupport rule set format");
+    }
+    ruleSets_[item.tag] = rules;
+  }
 }
