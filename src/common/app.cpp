@@ -29,6 +29,7 @@ void App::run() {
   for (auto item : appConfig.inbounds) {
     auto inbound = builder.buildInbound(item);
     inbound->start();
+    log("inbound", std::format("{} start", item.tag));
     asio::co_spawn(io_, inboundWork_(std::move(inbound)), asio::detached);
   }
   io_.run();
