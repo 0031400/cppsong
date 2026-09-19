@@ -1,6 +1,7 @@
 #include "common/builder.hpp"
 #include "address.hpp"
 #include "config/config.hpp"
+#include "dns/servers/https.hpp"
 #include "dns/servers/udp.hpp"
 #include "inbounds/mixed.hpp"
 #include "listeners/tcp.hpp"
@@ -55,10 +56,13 @@ DnsCenter Builder::buildDnsCenter() {
 
 std::unique_ptr<DnsServer> Builder::buildDnsServer(DnsServerConfig config) {
   if (config.type == "udp") {
-    auto v = std::make_unique<UdpDnsServer>(
+    return std::make_unique<UdpDnsServer>(
         io_,
         udp::endpoint(ip::make_address(config.server), config.server_port));
-    return v;
+  } else if (config.type == "https") {
+    return std::make_unique<HttpsDnsServer>(
+        io_, tcp::endpoint(ip::make_address(config.server), config.server_port),
+        config.host, config.path, config.tls.serverName, config.tls.insecure);
   }
   throw std::runtime_error("unsupport dns server type");
 }

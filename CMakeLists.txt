@@ -16,6 +16,7 @@ add_executable(one
     src/connections/wss.cpp
     src/connections/relay.cpp
     src/dns/servers/udp.cpp
+    src/dns/servers/https.cpp
     src/dns/dns.cpp
     src/dns/message.cpp
     src/inbounds/inbound.cpp

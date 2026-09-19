@@ -17,4 +17,5 @@ private:
   std::string path_;
   std::string serverName_;
   bool insecure_;
+  ssl::context ctx_;
 };

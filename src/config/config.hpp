@@ -29,6 +29,7 @@ struct DnsServerConfig {
   std::string type;
   std::string server;
   u16 server_port;
+  std::string host;
   std::string path;
   TlsClientConfig tls;
 };

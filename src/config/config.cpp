@@ -100,6 +100,7 @@ DnsServerConfig parseDnsServerConfig(const json::object &obj) {
   v.server_port = getu16(obj, "server_port");
   v.tag = getString(obj, "tag");
   v.type = getString(obj, "type");
+  v.host = getString(obj, "host");
   v.tls = parseTlsClientConfig(getObj(obj, "tls"));
   v.path = getString(obj, "path");
   return v;
