@@ -6,6 +6,7 @@
 #include "listeners/tcp.hpp"
 #include "outbounds/direct.hpp"
 #include "outbounds/vless.hpp"
+#include "router/ipnet.hpp"
 #include "router/rule.hpp"
 #include "transports/tcp.hpp"
 #include "transports/wss.hpp"
@@ -32,7 +33,7 @@ DnsCenter Builder::buildDnsCenter() {
   }
   std::vector<DnsRule> rules;
   for (auto item : config.rules) {
-    rules.emplace_back(buildRule(item.rule), item.server);
+    rules.emplace_back(buildDomainRule(item.rule), item.server);
   }
   return DnsCenter(io_, addr, rules, std::move(servers), config.final);
 }
@@ -46,12 +47,13 @@ std::unique_ptr<DnsServer> Builder::buildDnsServer(DnsServerConfig config) {
   }
   throw std::runtime_error("unsupport dns server type");
 }
-Rule Builder::buildRule(DomainRuleConfig config) {
+DomainRule Builder::buildDomainRule(DomainRuleConfig config) {
   std::vector<std::regex> regexs;
   for (auto item : config.domainRegex) {
     regexs.emplace_back(std::regex(item));
   }
-  return Rule(config.domain, config.domainSuffix, config.domainKeyword, regexs);
+  return DomainRule(config.domain, config.domainSuffix, config.domainKeyword,
+                    regexs);
 }
 std::unique_ptr<Listener> Builder::buildListener(InboundConfig config) {
   return std::make_unique<TcpListener>(
@@ -111,4 +113,19 @@ std::unique_ptr<Transport> Builder::buildTransport(OutboundConfig config) {
         config.tls.serverName, config.tls.insecure);
   }
   throw std::runtime_error("unsupport transport type");
+}
+
+RouteRule Builder::buildRouteRule(RouteRuleConfig config) {
+  std::vector<IpNetwork> networks;
+  for (const auto &item : config.rule.cidr) {
+    networks.emplace_back(parseCidr(item));
+  }
+  return {buildDomainRule(config.rule.domainRule), networks, config.outbound};
+}
+Router Builder::buildRouter() {
+  std::vector<RouteRule> rules;
+  for (const auto &item : config_.router.rules) {
+    rules.emplace_back(buildRouteRule(item));
+  }
+  return Router(rules, config_.router.final);
 }

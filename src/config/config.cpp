@@ -74,9 +74,15 @@ DomainRuleConfig parseDomainRuleConfig(const json::object &obj) {
   v.domainRegex = getStringList(obj, "domain_regex");
   return v;
 }
+RuleConfig parseRuleConfig(const json::object &obj) {
+  RuleConfig v;
+  v.domainRule = parseDomainRuleConfig(obj);
+  v.cidr = getStringList(obj, "cidr");
+  return v;
+}
 RouteRuleConfig parseRouteRuleConfig(const json::object &obj) {
   RouteRuleConfig v;
-  v.rule = parseDomainRuleConfig(obj);
+  v.rule = parseRuleConfig(obj);
   v.rule_set = getStringList(obj, "rule_set");
   v.outbound = getString(obj, "outbound");
   return v;

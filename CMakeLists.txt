@@ -6,6 +6,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(Boost CONFIG REQUIRED COMPONENTS system json program_options url)
 find_package(OpenSSL REQUIRED)
 add_executable(one
+    src/common/address.cpp
     src/common/app.cpp
     src/common/builder.cpp
     src/config/config.cpp
@@ -25,6 +26,8 @@ add_executable(one
     src/listeners/wss.cpp
     src/outbounds/direct.cpp
     src/outbounds/vless.cpp
+    src/router/ipnet.cpp
+    src/router/router.cpp
     src/router/rule.cpp
     src/tcp/tcpclient.cpp
     src/transports/tcp.cpp

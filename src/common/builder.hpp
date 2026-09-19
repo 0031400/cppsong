@@ -4,6 +4,7 @@
 #include "inbounds/inbound.hpp"
 #include "listeners/listener.hpp"
 #include "outbounds/outbound.hpp"
+#include "router/router.hpp"
 #include "transports/transport.hpp"
 #include <boost/asio/io_context.hpp>
 #include <memory>
@@ -19,8 +20,10 @@ public:
   std::unique_ptr<Listener> buildListener(InboundConfig config);
   std::unique_ptr<Transport> buildTransport(OutboundConfig config);
   bytes buildUuid(std::string uuid);
+  RouteRule buildRouteRule(RouteRuleConfig config);
+  Router buildRouter();
   Address buildAddress(std::string server, u16 port);
-  Rule buildRule(DomainRuleConfig config);
+  DomainRule buildDomainRule(DomainRuleConfig config);
 
 private:
   asio::io_context &io_;

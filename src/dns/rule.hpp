@@ -2,6 +2,6 @@
 #include "router/rule.hpp"
 #include <string>
 struct DnsRule {
-  Rule rule;
+  DomainRule rule;
   std::string server;
 };

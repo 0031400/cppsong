@@ -1,6 +1,7 @@
 #pragma once
 #include "inbounds/inbound.hpp"
 #include "outbounds/outbound.hpp"
+#include "router/router.hpp"
 #include "tcp/session.hpp"
 #include "utils/headers.hpp"
 #include <memory>
@@ -18,4 +19,5 @@ private:
   std::string configPath_;
   asio::io_context io_;
   std::unordered_map<std::string, std::shared_ptr<Outbound>> outbounds;
+  std::optional<Router> router_;
 };

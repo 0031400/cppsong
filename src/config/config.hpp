@@ -20,6 +20,10 @@ struct DomainRuleConfig {
   std::vector<std::string> domainKeyword;
   std::vector<std::string> domainRegex;
 };
+struct RuleConfig {
+  DomainRuleConfig domainRule;
+  std::vector<std::string> cidr;
+};
 struct DnsServerConfig {
   std::string tag;
   std::string type;
@@ -73,7 +77,7 @@ struct OutboundConfig {
   TransportConfig transport;
 };
 struct RouteRuleConfig {
-  DomainRuleConfig rule;
+  RuleConfig rule;
   std::vector<std::string> rule_set;
   std::string outbound;
 };

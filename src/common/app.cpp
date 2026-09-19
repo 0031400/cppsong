@@ -8,6 +8,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/json/parse.hpp>
+#include <format>
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -29,6 +30,7 @@ void App::run() {
   auto dnsCenter = std::make_shared<DnsCenter>(builder.buildDnsCenter());
   dnsCenter->start();
   DnsCenter::instance = dnsCenter;
+  router_ = builder.buildRouter();
   for (auto item : appConfig.outbounds) {
     outbounds[item.tag] = builder.buildOutbound(item);
   }
@@ -51,7 +53,10 @@ async<void> App::inboundWork_(std::unique_ptr<Inbound> inbound) {
 }
 async<void> App::handleSession_(InTcpSession session) {
   try {
-    auto outbound = outbounds["direct"];
+    auto outboundTag = router_->match(session.address);
+    log("route",
+        std::format("{} -> {}", session.address.toString(), outboundTag));
+    auto outbound = outbounds[outboundTag];
     auto conn1 = std::move(session.conn);
     auto conn2 =
         co_await outbound->connect({session.address, session.firstData});

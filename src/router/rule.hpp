@@ -1,19 +1,28 @@
 #pragma once
+#include "common/address.hpp"
+#include "router/ipnet.hpp"
 #include <regex>
 #include <string>
 #include <vector>
 
-class Rule {
+class DomainRule {
 public:
-  explicit Rule(std::vector<std::string> domain,
-                std::vector<std::string> domainSuffix,
-                std::vector<std::string> domainKeyword,
-                std::vector<std::regex> domainRegex);
-  bool matchDomain(std::string_view domain);
+  explicit DomainRule(std::vector<std::string> domain,
+                      std::vector<std::string> domainSuffix,
+                      std::vector<std::string> domainKeyword,
+                      std::vector<std::regex> domainRegex);
+  bool matchDomain(std::string_view domain) const;
 
 private:
   std::vector<std::string> domain_;
   std::vector<std::string> domainSuffix_;
   std::vector<std::string> domainKeyword_;
   std::vector<std::regex> domainRegex_;
+};
+
+struct RouteRule {
+  DomainRule domainRule;
+  std::vector<IpNetwork> cidr;
+  std::string outbound;
+  bool match(Address address) const;
 };

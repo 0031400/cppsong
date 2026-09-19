@@ -1,6 +1,9 @@
 #include "router/rule.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <regex>
-bool Rule::matchDomain(std::string_view domain) {
+#include <string>
+#include <variant>
+bool DomainRule::matchDomain(std::string_view domain) const {
   for (const auto &item : domain_) {
     if (domain == item) {
       return true;
@@ -27,9 +30,25 @@ bool Rule::matchDomain(std::string_view domain) {
   }
   return false;
 }
-Rule::Rule(std::vector<std::string> domain,
-           std::vector<std::string> domainSuffix,
-           std::vector<std::string> domainKeyword,
-           std::vector<std::regex> domainRegex)
+DomainRule::DomainRule(std::vector<std::string> domain,
+                       std::vector<std::string> domainSuffix,
+                       std::vector<std::string> domainKeyword,
+                       std::vector<std::regex> domainRegex)
     : domain_(domain), domainSuffix_(domainSuffix),
       domainKeyword_(domainKeyword), domainRegex_(domainRegex) {}
+bool RouteRule::match(Address address) const {
+  if (std::holds_alternative<std::string>(address.address)) {
+    auto value = std::get<std::string>(address.address);
+    if (domainRule.matchDomain(value)) {
+      return true;
+    }
+  } else {
+    auto value = std::get<ip::address>(address.address);
+    for (const auto &item : cidr) {
+      if (item.contains(value)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
