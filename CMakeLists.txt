@@ -30,6 +30,7 @@ add_executable(one
     src/router/ipnet.cpp
     src/router/router.cpp
     src/router/rule.cpp
+    src/sniff/sniff.cpp
     src/tcp/tcpclient.cpp
     src/transports/tcp.cpp
     src/transports/tls.cpp

@@ -2,6 +2,7 @@
 #include "builder.hpp"
 #include "config/config.hpp"
 #include "connections/relay.hpp"
+#include "sniff/sniff.hpp"
 #include "utils/file.hpp"
 #include "utils/headers.hpp"
 #include "utils/log.hpp"
@@ -44,6 +45,13 @@ async<void> App::inboundWork_(std::unique_ptr<Inbound> inbound) {
 }
 async<void> App::handleSession_(InTcpSession session) {
   try {
+    auto sniffed = sniffDomain(session.firstData);
+    if (!sniffed.empty()) {
+      auto oldAddress = session.address;
+      session.address.address = sniffed;
+      log("sniff", std::format("{} -> {}", oldAddress.toString(),
+                               session.address.toString()));
+    }
     auto outboundTag = router_->match(session.address);
     log("route",
         std::format("{} -> {}", session.address.toString(), outboundTag));
